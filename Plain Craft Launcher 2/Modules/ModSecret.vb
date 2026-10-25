@@ -145,7 +145,8 @@ Friend Module ModSecret
 #Region "更新"
 
     Friend Sub UpdateCheckByButton()
-        Hint("该版本中不包含更新功能……")
+        Hint("请自行核对是否有新版本：本版本不包含自动更新，将为你打开发布页")
+        OpenWebsite("https://github.com/hmaoraze/PCL/releases")
     End Sub
 
     Friend IsUpdateWaitingRestart As Boolean = False
