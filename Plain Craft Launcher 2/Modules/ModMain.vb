@@ -1,4 +1,5 @@
 Imports System.Collections.ObjectModel
+Imports System.Windows.Documents
 Imports System.Windows.Interop
 Imports System.Windows.Threading
 
@@ -196,6 +197,11 @@ EndHint:
         Public Button3Action As Action = Nothing
         Public IsWarn As Boolean = False
         Public ForceWait As Boolean = False
+        ''' <summary>
+        ''' 自定义富文本内容的构造方法。若不为 Nothing，则优先于 Text 显示。
+        ''' 该方法会在 UI 线程中被调用，可以安全地创建 Inline 对象。
+        ''' </summary>
+        Public CaptionInlinesFactory As Func(Of IEnumerable(Of Inline)) = Nothing
         Public WaitFrame As New DispatcherFrame(True)
         ''' <summary>
         ''' 弹窗是否已经关闭。
@@ -230,9 +236,10 @@ EndHint:
     Public Function MyMsgBox(Caption As String, Optional Title As String = "提示",
                              Optional Button1 As String = "确定", Optional Button2 As String = "", Optional Button3 As String = "",
                              Optional IsWarn As Boolean = False, Optional HighLight As Boolean = True, Optional ForceWait As Boolean = False,
-                             Optional Button1Action As Action = Nothing, Optional Button2Action As Action = Nothing, Optional Button3Action As Action = Nothing) As Integer
+                             Optional Button1Action As Action = Nothing, Optional Button2Action As Action = Nothing, Optional Button3Action As Action = Nothing,
+                             Optional CaptionInlinesFactory As Func(Of IEnumerable(Of Inline)) = Nothing) As Integer
         '将弹窗列入队列
-        Dim Converter As New MyMsgBoxConverter With {.Type = MyMsgBoxType.Text, .Button1 = Button1, .Button2 = Button2, .Button3 = Button3, .Text = Caption, .IsWarn = IsWarn, .Title = Title, .HighLight = HighLight, .ForceWait = True, .Button1Action = Button1Action, .Button2Action = Button2Action, .Button3Action = Button3Action}
+        Dim Converter As New MyMsgBoxConverter With {.Type = MyMsgBoxType.Text, .Button1 = Button1, .Button2 = Button2, .Button3 = Button3, .Text = Caption, .IsWarn = IsWarn, .Title = Title, .HighLight = HighLight, .ForceWait = True, .Button1Action = Button1Action, .Button2Action = Button2Action, .Button3Action = Button3Action, .CaptionInlinesFactory = CaptionInlinesFactory}
         If Button2.Length > 0 OrElse ForceWait Then
             '若有多个按钮则开始等待
             If FrmMain Is Nothing OrElse FrmMain.PanMsg Is Nothing AndAlso RunInUi() Then

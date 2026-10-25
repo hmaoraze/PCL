@@ -1,3 +1,5 @@
+Imports System.Windows.Documents
+
 Public Class MyMsgText
 
     Private ReadOnly MyConverter As MyMsgBoxConverter
@@ -12,7 +14,22 @@ Public Class MyMsgText
             Btn3.Name = Btn3.Name & GetUuid()
             MyConverter = Converter
             LabTitle.Text = Converter.Title
-            LabCaption.Text = Converter.Text
+            '富文本内容（若提供了构造方法则优先使用）
+            Dim CaptionInlines As IEnumerable(Of Inline) = Nothing
+            If Converter.CaptionInlinesFactory IsNot Nothing Then
+                Try
+                    CaptionInlines = Converter.CaptionInlinesFactory().ToList()
+                Catch ex As Exception
+                    Logger.Error(ex, "构造弹窗富文本失败")
+                End Try
+            End If
+            If CaptionInlines Is Nothing Then
+                LabCaption.Text = Converter.Text
+            Else
+                For Each CaptionInline As Inline In CaptionInlines
+                    LabCaption.Inlines.Add(CaptionInline)
+                Next
+            End If
             Btn1.Text = Converter.Button1
             If Converter.IsWarn Then
                 Btn1.ColorType = MyButton.ColorState.Red
@@ -44,7 +61,7 @@ Public Class MyMsgText
                 AaDouble(Sub(i) TransformRotate.Angle += i, -TransformRotate.Angle, 300, 60, New AniEaseOutFluent(AniEasePower.Weak))
             }, "MyMsgBox " & Uuid)
             '记录日志
-            Logger.Info($"普通弹窗：{LabTitle.Text}{vbCrLf}{LabCaption.Text}")
+            Logger.Info($"普通弹窗：{LabTitle.Text}{vbCrLf}{If(MyConverter.CaptionInlinesFactory Is Nothing, LabCaption.Text, MyConverter.Text)}")
 
         Catch ex As Exception
             Logger.Error(ex, "普通弹窗加载失败", LogBehavior.Toast)

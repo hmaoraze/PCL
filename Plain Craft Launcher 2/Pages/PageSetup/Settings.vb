@@ -302,6 +302,8 @@ Public Class Settings
         Dim Entry As Setting = Nothing
         If Not Entries.TryGetValue(Key, Entry) Then Throw New KeyNotFoundException("未找到设置项：" & Key)
         If Entry.Encrypted Then Throw New InvalidOperationException("禁止写入加密设置项：" & Key)
+        '安全确认相关的设置项不允许被自定义事件（可能来自联网主页）改写，否则可绕过确认弹窗
+        If Key = "HintCustomCommand" Then Throw New InvalidOperationException("禁止通过自定义事件写入该设置项：" & Key)
         [Set](Key, Value, Instance)
     End Sub
 

@@ -11,11 +11,8 @@ Public Class FormMain
         Dim FeatureList As New List(Of KeyValuePair(Of Integer, String))
         '统计更新日志条目
         If BuildType = BuildTypes.Release Then
-            If LastVersion < 413 Then 'Release 2.99.0.0
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "删除：为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……"))
-            End If
             If LastVersion < 411 Then 'Release 2.14.0.0
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "新增：允许修改、添加、移除、更新已安装版本的 MC 版本以及各个组件，可从版本设置中进入"))
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "优化：启动游戏时允许按 Esc 取消"))
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "优化：允许复制主页的启动日志中的内容"))
                 FeatureCount += 19
@@ -103,11 +100,8 @@ Public Class FormMain
             '3：BUG+ IMP* FEAT-
             '2：BUG* IMP-
             '1：BUG-
-            If LastVersion < 414 Then 'Snapshot 2.99.0.0
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "删除：为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……"))
-            End If
             If LastVersion < 412 Then 'Snapshot 2.14.0.0
-                FeatureList.Add(New KeyValuePair(Of Integer, String)(4, "新增：允许修改、添加、移除、更新已安装版本的各个组件，可从版本设置中进入"))
+                FeatureList.Add(New KeyValuePair(Of Integer, String)(5, "新增：允许修改、添加、移除、更新已安装版本的 MC 版本以及各个组件，可从版本设置中进入"))
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "优化：启动游戏时允许按 Esc 取消"))
                 FeatureList.Add(New KeyValuePair(Of Integer, String)(2, "优化：允许复制主页的启动日志中的内容"))
                 FeatureCount += 19
@@ -449,12 +443,92 @@ Public Class FormMain
             Telemetry("启动")
             '开源版本提示
             If VersionBranchMain = "OpenSource" Then
-                MyMsgBox($"该版本中无法使用以下特性：{vbCrLf}- CurseForge API 调用：需要自行申请 API Key，然后添加到 ModSecret.vb 的开头{vbCrLf}- 正版登录：需要自行向微软申请 Client ID，然后添加到 ModSecret.vb 的开头{vbCrLf}- 更新与联网通知：避免滥用隐患{vbCrLf}- 主题切换：这是需要赞助解锁的纪念性质的功能，别让赞助者太伤心啦……{vbCrLf}- 百宝箱：开发早期往里面塞了些开发工具，整理起来太麻烦了……", "开源版本说明")
+                MyMsgBox(OpenSourceNoticeText, "开源版本说明", CaptionInlinesFactory:=AddressOf BuildOpenSourceNoticeInlines)
             End If
         End Sub, "初始化", ThreadPriority.Lowest)
 
         Logger.Info($"第三阶段加载用时：{GetTimeMs() - ApplicationStartTick} ms")
     End Sub
+
+#Region "开源版本提示"
+
+    '本修改版所基于的上游源码提交
+    Private Const UpstreamCommit As String = "6b9a50df911c9d68b69b24c979efba477fb14b67"
+    Private Const UpstreamCommitShort As String = "6b9a50d"
+    Private Const UpstreamCommitUrl As String = "https://github.com/Meloong-Git/PCL/commit/" & UpstreamCommit
+    '段落中该标记会被替换为可点击的提交号
+    Private Const UpstreamCommitMark As String = "{COMMIT}"
+
+    ''' <summary>
+    ''' 社区修改版的免责声明。其中 {COMMIT} 会被替换为可点击的 GitHub 提交链接。
+    ''' </summary>
+    Private Shared ReadOnly OpenSourceNoticeParagraphs As String() = {
+        "注意：本程序是开源社区基于 PCL 官方源码修改的版本，并非 PCL 官方发布，与 PCL 作者及官方团队无关。",
+        "相对官方发布，本版本仅移除了阻止 MC 下载的限制代码（涉及下载页、整合包安装、版本修改页与拖拽安装），并添加了本提示文字，其余功能与官方源码保持一致。",
+        "本版本的上游源码取自官方仓库的提交 {COMMIT}（即 PCL " & VersionBaseName & " 正式版，MC 下载功能正是在该版本被移除），点击提交号即可跳转到 GitHub 查看该次提交。",
+        "我们没有向其中加入任何病毒或恶意代码，请放心使用。",
+        "但由于本版本基于上游开源代码及其依赖构建，理论上无法完全排除上游被投毒的可能，我们也不一定能够察觉；若因此产生任何问题，本修改版不承担相关责任。"
+    }
+
+    ''' <summary>
+    ''' 官方仓库原有的说明，保持原有的字体与配色。
+    ''' </summary>
+    Private Shared ReadOnly OpenSourceOriginalNotice As String() = {
+        "该版本中无法使用以下特性：",
+        "- CurseForge API 调用：需要自行申请 API Key，然后添加到 ModSecret.vb 的开头",
+        "- 正版登录：需要自行向微软申请 Client ID，然后添加到 ModSecret.vb 的开头",
+        "- 更新与联网通知：避免滥用隐患",
+        "- 主题切换：这是需要赞助解锁的纪念性质的功能，别让赞助者太伤心啦……",
+        "- 百宝箱：开发早期往里面塞了些开发工具，整理起来太麻烦了……"
+    }
+
+    ''' <summary>
+    ''' 纯文本版本的弹窗内容，用于日志记录以及富文本构造失败时的回退。
+    ''' </summary>
+    Private Shared ReadOnly OpenSourceNoticeText As String =
+        String.Join(vbCrLf, OpenSourceNoticeParagraphs).Replace(UpstreamCommitMark, UpstreamCommit) &
+        vbCrLf & vbCrLf & String.Join(vbCrLf, OpenSourceOriginalNotice)
+
+    ''' <summary>
+    ''' 构造免责声明的富文本：声明部分整段标红，提交号可点击，官方原有说明保持默认配色。
+    ''' 该方法在 UI 线程执行。
+    ''' </summary>
+    Private Function BuildOpenSourceNoticeInlines() As IEnumerable(Of Inline)
+        Dim Result As New List(Of Inline)
+        '免责声明：整段红色
+        For i As Integer = 0 To OpenSourceNoticeParagraphs.Length - 1
+            If i > 0 Then Result.Add(New LineBreak())
+            Dim Splits As String() = OpenSourceNoticeParagraphs(i).Split(New String() {UpstreamCommitMark}, StringSplitOptions.None)
+            Dim HeadRun As New Run(Splits(0)) With {.FontWeight = If(i = 0, FontWeights.Bold, FontWeights.Normal)}
+            HeadRun.SetResourceReference(TextElement.ForegroundProperty, "ColorBrushRedLight")
+            Result.Add(HeadRun)
+            If Splits.Length > 1 Then
+                Dim CommitLink As New Hyperlink(New Run(UpstreamCommitShort))
+                CommitLink.SetResourceReference(TextElement.ForegroundProperty, "ColorBrushRedLight")
+                CommitLink.FontWeight = FontWeights.Bold
+                CommitLink.TextDecorations = TextDecorations.Underline
+                CommitLink.Cursor = Cursors.Hand
+                CommitLink.ToolTip = "在 GitHub 上查看该提交：" & UpstreamCommit
+                AddHandler CommitLink.Click, Sub(Sender As Object, E As RoutedEventArgs) OpenWebsite(UpstreamCommitUrl)
+                Result.Add(CommitLink)
+                Dim TailRun As New Run(Splits(1))
+                TailRun.SetResourceReference(TextElement.ForegroundProperty, "ColorBrushRedLight")
+                Result.Add(TailRun)
+            End If
+        Next
+        '空行
+        Result.Add(New LineBreak())
+        Result.Add(New LineBreak())
+        '官方原有说明：不设置颜色，沿用弹窗默认样式
+        For i As Integer = 0 To OpenSourceOriginalNotice.Length - 1
+            If i > 0 Then Result.Add(New LineBreak())
+            Result.Add(New Run(OpenSourceOriginalNotice(i)))
+        Next
+        Return Result
+    End Function
+
+#End Region
+
     '根据打开次数触发的事件
     Private Sub RunCountSub()
         Settings.Set("SystemCount", Settings.Get(Of Integer)("SystemCount") + 1)
@@ -1076,10 +1150,6 @@ Public Class FormMain
                     RunInUi(Sub() FrmMain.PageChange(FormMain.PageType.TaskManager))
                     Return
                 Catch ex As Exception
-                    If RestrictMcDownload AndAlso ex.Message = "为遵守相关法律法规，PCL 暂时不再提供 MC 下载功能，非常抱歉 qwq……" Then
-                        Hint(ex.Message, HintType.Red)
-                        Return
-                    End If
                     If ex.IsCanceled Then Return
                     '安装失败，继续往后尝试
                 End Try

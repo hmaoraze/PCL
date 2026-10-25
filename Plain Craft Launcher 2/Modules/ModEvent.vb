@@ -206,7 +206,7 @@ Public Class CustomEvent
                             If Type = EventType.打开帮助 Then
                                 PageOtherHelp.EnterHelpPage(Location)
                             Else
-                                If Not EventSafetyConfirm("即将执行：" & Location & If(Args.Length >= 2, " " & Arg1, "")) Then Return
+                                If Not EventSafetyConfirm("即将执行：" & Location & If(Args.Length >= 2, " " & Arg1, ""), AllowPersistentSkip:=False) Then Return
                                 Dim Info As New ProcessStartInfo With {
                                     .Arguments = If(Args.Length >= 2, Arg1, ""),
                                     .FileName = Location,
@@ -430,7 +430,12 @@ Public Class CustomEvent
     ''' <summary>
     ''' 弹出安全确认弹窗。返回是否继续执行。
     ''' </summary>
-    Private Shared Function EventSafetyConfirm(Message As String) As Boolean
+    ''' <param name="AllowPersistentSkip">是否允许「今后不再要求确认」。执行程序等高风险操作应传入 False。</param>
+    Private Shared Function EventSafetyConfirm(Message As String, Optional AllowPersistentSkip As Boolean = True) As Boolean
+        '高风险操作不允许被持久化的「不再询问」跳过
+        If Not AllowPersistentSkip Then
+            Return MyMsgBox(Message & vbCrLf & "请在确认没有安全隐患后再继续。", "执行确认", "继续", "取消", IsWarn:=True) = 1
+        End If
         If Settings.Get(Of Boolean)("HintCustomCommand") Then Return True
         Select Case MyMsgBox(Message & vbCrLf & "请在确认没有安全隐患后再继续。", "执行确认", "继续", "继续且今后不再要求确认", "取消")
             Case 1
