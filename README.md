@@ -32,7 +32,7 @@
 - 本程序未做代码签名，首次运行可能被 SmartScreen 拦截，选择「更多信息 → 仍要运行」；文件大小与 SHA-256 以对应 Release 的说明为准，下载后可自行校验：
 
 ```bat
-certutil -hashfile "PCL-2.99.0.0-community.1.exe" SHA256
+certutil -hashfile "PCL-community.exe" SHA256
 ```
 
 ## 关于「公共通道 / 联机」的说明
